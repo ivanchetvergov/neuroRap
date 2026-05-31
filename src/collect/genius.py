@@ -15,7 +15,6 @@ class GeniusCollector:
     def __init__(self, token: str, checkpoint_path: Path):
         self._genius = lg.Genius(
             token,
-            verbose=False,
             remove_section_headers=False,
             skip_non_songs=False,
             excluded_terms=["(Live)", "(Remix)", "(Acoustic)"],
