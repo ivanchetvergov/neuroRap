@@ -50,6 +50,18 @@ ARTIST_LIST = [
     "OBLADAET",
     "IC3PEAK",
     "Instasamka",
+
+    # --- свежие 2024-2026 ---
+    "Молодой Принц",
+    "MADKID",
+    "Платина",
+    "LOVV66",
+    "GSPD",
+    "LIZER",
+    "Некоглай",
+    "ХЛЕБ",
+    "Три дня дождя",
+    "Тилэкс",
 ]
 
 ARTIST_DEFAULT_TAGS: dict[str, list[str]] = {
@@ -99,6 +111,18 @@ ARTIST_DEFAULT_TAGS: dict[str, list[str]] = {
     "OBLADAET": ["Cloud Rap", "Experimental", "Abstract", "New School"],
     "IC3PEAK": ["Experimental", "Electronic", "Dark", "Alternative"],
     "Instasamka": ["Trap", "Hyperpop", "Aggressive", "New School"],
+
+    # --- свежие 2024-2026 ---
+    "Молодой Принц": ["Trap", "Street Rap", "Dark", "Aggressive", "New School"],
+    "MADKID": ["Trap", "New School", "Energetic", "Youth", "Melodic"],
+    "Платина": ["Trap", "New School", "Melodic", "Mainstream", "Street Rap"],
+    "LOVV66": ["Emo Rap", "Melodic", "Dark", "New School"],
+    "GSPD": ["Experimental", "Industrial", "Dark", "Alternative", "Post-Punk Rap"],
+    "LIZER": ["Emo Rap", "Dark Trap", "Melodic", "New School"],
+    "Некоглай": ["Meme Rap", "Hyperpop", "Comedy", "New School"],
+    "ХЛЕБ": ["Alternative Hip-Hop", "Experimental", "Abstract", "Ironic"],
+    "Три дня дождя": ["Emo Rap", "Melodic", "Dark", "Alternative", "New School"],
+    "Тилэкс": ["Trap", "New School", "Street Rap", "Aggressive"],
 }
 
 ALBUM_TAGS: dict[str, dict[str, list[str]]] = {

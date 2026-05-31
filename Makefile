@@ -4,7 +4,7 @@ export PYTHONPATH := .
 .PHONY: collect collect-genius collect-spotify merge train generate bot \
         clean-data clean-model clean
 
-# ── data collection ─────────────────────────────────────────────────────────
+# ── data collection ──────────────────────────────────────────────────────────
 
 collect-genius:
 	$(PYTHON) scripts/collect_genius.py
@@ -12,14 +12,14 @@ collect-genius:
 collect-spotify:
 	$(PYTHON) scripts/collect_spotify.py
 
-# Genius идёт с начала списка, Spotify — с конца, встречаются в середине.
-# -j2 запускает оба процесса параллельно; merge ждёт завершения обоих.
-collect:
-	$(MAKE) -j2 collect-genius collect-spotify
-	$(PYTHON) scripts/merge_data.py
-
 merge:
 	$(PYTHON) scripts/merge_data.py
+
+# Genius собирает лирику → Spotify обогащает аудио-фичами → merge
+collect:
+	$(MAKE) collect-genius
+	$(MAKE) collect-spotify
+	$(MAKE) merge
 
 # ── model ────────────────────────────────────────────────────────────────────
 

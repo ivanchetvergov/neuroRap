@@ -20,41 +20,23 @@ class SpotifyEnricher:
         )
         self._checkpoint_path = checkpoint_path
 
-    def run(self, genius_checkpoint: Path, artist_list: list[str]) -> None:
-        """Обогащает треки из Genius-чекпоинта, обходя артистов с конца списка."""
+    def enrich(self, df: pd.DataFrame) -> None:
+        """Обогащает треки из df аудио-фичами, пишет в checkpoint_path. Продолжает с места остановки."""
         done = self._load_done()
 
-        for artist_name in reversed(artist_list):
-            if not genius_checkpoint.exists():
-                print(f"[spotify/wait] genius checkpoint не найден, пропускаем {artist_name}")
+        for _, row in df.iterrows():
+            key = f"{row['artist']}||{row['title']}"
+            if key in done:
                 continue
 
-            genius_df = pd.read_csv(genius_checkpoint)
-            artist_songs = genius_df[genius_df["artist"] == artist_name]
-
-            if artist_songs.empty:
-                print(f"[spotify/skip] {artist_name} ещё не собран Genius-ом")
-                continue
-
-            new_rows: list[dict] = []
-            for _, row in artist_songs.iterrows():
-                key = f"{row['artist']}||{row['title']}"
-                if key in done:
-                    continue
-                features = self._get_features(str(row["artist"]), str(row["title"]))
-                if features:
-                    new_rows.append({"artist": row["artist"], "title": row["title"], **features})
-                    done.add(key)
-                time.sleep(0.1)
-
-            if new_rows:
-                self._save(new_rows)
-                print(f"[spotify] {artist_name}: +{len(new_rows)} треков обогащено")
-            else:
-                print(f"[spotify/done] {artist_name}: всё уже обогащено")
+            features = self._get_features(str(row["artist"]), str(row["title"]))
+            if features:
+                self._append({"artist": row["artist"], "title": row["title"], **features})
+                done.add(key)
+            time.sleep(0.1)
 
         total = len(pd.read_csv(self._checkpoint_path)) if self._checkpoint_path.exists() else 0
-        print(f"\nSpotify итого: {total} треков в чекпоинте")
+        print(f"Spotify: {total} треков обогащено")
 
     def _get_features(self, artist: str, title: str) -> Optional[dict]:
         try:
@@ -76,9 +58,9 @@ class SpotifyEnricher:
         df = pd.read_csv(self._checkpoint_path)
         return set(df["artist"] + "||" + df["title"])
 
-    def _save(self, new_rows: list[dict]) -> None:
+    def _append(self, row: dict) -> None:
         self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-        df_new = pd.DataFrame(new_rows)
+        df_new = pd.DataFrame([row])
         if self._checkpoint_path.exists():
             df_old = pd.read_csv(self._checkpoint_path)
             df_new = pd.concat([df_old, df_new], ignore_index=True)
