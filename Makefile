@@ -4,6 +4,11 @@ export PYTHONPATH := .
 .PHONY: collect collect-genius collect-spotify merge train generate bot \
         clean-data clean-model clean
 
+# ── setup ────────────────────────────────────────────────────────────────────
+
+install:
+	pip install -r requirements.txt
+
 # ── data collection ──────────────────────────────────────────────────────────
 
 collect-genius:
