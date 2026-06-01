@@ -5,7 +5,6 @@ from typing import Optional
 
 import lyricsgenius as lg
 import pandas as pd
-from tqdm import tqdm
 
 from artists import ALBUM_TAGS, ARTIST_DEFAULT_TAGS
 from src.collect.cleaner import clean_lyrics
@@ -47,18 +46,21 @@ class GeniusCollector:
 
                 n_songs = len(artist_obj.songs)
                 songs: list[SongData] = []
+                print(f"  найдено {n_songs} треков, собираю...", flush=True)
 
-                with tqdm(artist_obj.songs, total=n_songs, unit="трек",
-                          bar_format="  {l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]") as bar:
-                    for song in bar:
-                        bar.set_postfix_str(song.title[:40])
-                        result = self._process_song(song, artist_name)
-                        if result:
-                            songs.append(result)
-                        time.sleep(0.15)
+                for j, song in enumerate(artist_obj.songs, 1):
+                    result = self._process_song(song, artist_name)
+                    if result:
+                        songs.append(result)
+
+                    if j % 10 == 0 or j == n_songs:
+                        pct = j / n_songs * 100
+                        print(f"  [{j:>3}/{n_songs}] {pct:.0f}%  собрано: {len(songs)}  → {song.title[:45]}", flush=True)
+
+                    time.sleep(0.15)
 
                 n_base = len(existing_df) + len(songs)
-                print(f"  ✓ собрано {len(songs)}/{n_songs} треков | база: {n_base} треков")
+                print(f"  ✓ готово: {len(songs)}/{n_songs} треков | в базе: {n_base}")
 
                 artist_df = pd.DataFrame([asdict(s) for s in songs])
                 existing_df = pd.concat([existing_df, artist_df], ignore_index=True)
