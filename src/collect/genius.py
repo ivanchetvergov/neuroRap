@@ -5,6 +5,7 @@ from typing import Optional
 
 import lyricsgenius as lg
 import pandas as pd
+from tqdm import tqdm
 
 from artists import ALBUM_TAGS, ARTIST_DEFAULT_TAGS
 from src.collect.cleaner import clean_lyrics
@@ -26,27 +27,38 @@ class GeniusCollector:
     def collect(self, artist_list: list[str], max_songs: Optional[int] = None) -> pd.DataFrame:
         existing_df, done_artists = self._load_checkpoint()
 
-        for artist_name in artist_list:
+        pending = [a for a in artist_list if a not in done_artists]
+        n_total = len(artist_list)
+        print(f"\nАртистов всего: {n_total} | уже собрано: {len(done_artists)} | осталось: {len(pending)}\n")
+
+        for i, artist_name in enumerate(artist_list, 1):
             if artist_name in done_artists:
-                print(f"[skip] {artist_name}")
+                print(f"  [{i:>2}/{n_total}] {artist_name} — пропущен")
                 continue
 
-            print(f"\n--- {artist_name} ---")
+            print(f"\n[{i:>2}/{n_total}] {artist_name}")
             try:
-                artist_obj = self._genius.search_artist(artist_name, max_songs=max_songs, sort="popularity")
+                artist_obj = self._genius.search_artist(
+                    artist_name, max_songs=max_songs, sort="popularity"
+                )
                 if not artist_obj:
-                    print("  [!] не найден")
+                    print("  не найден на Genius")
                     continue
 
-                print(f"  найдено {len(artist_obj.songs)} песен")
-                songs = []
-                for song in artist_obj.songs:
-                    result = self._process_song(song, artist_name)
-                    if result:
-                        songs.append(result)
-                    time.sleep(0.15)
+                n_songs = len(artist_obj.songs)
+                songs: list[SongData] = []
 
-                print(f"  собрано: {len(songs)}/{len(artist_obj.songs)}")
+                with tqdm(artist_obj.songs, total=n_songs, unit="трек",
+                          bar_format="  {l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]") as bar:
+                    for song in bar:
+                        bar.set_postfix_str(song.title[:40])
+                        result = self._process_song(song, artist_name)
+                        if result:
+                            songs.append(result)
+                        time.sleep(0.15)
+
+                n_base = len(existing_df) + len(songs)
+                print(f"  ✓ собрано {len(songs)}/{n_songs} треков | база: {n_base} треков")
 
                 artist_df = pd.DataFrame([asdict(s) for s in songs])
                 existing_df = pd.concat([existing_df, artist_df], ignore_index=True)
@@ -56,7 +68,8 @@ class GeniusCollector:
                 print(f"  [!] ошибка: {e}")
                 time.sleep(10)
 
-        print(f"\nИтого: {len(existing_df)} треков")
+        print(f"\n{'─'*50}")
+        print(f"Сбор завершён: {len(existing_df)} треков, {existing_df['artist'].nunique()} артистов")
         return existing_df
 
     def _process_song(self, song_light, artist_name: str) -> Optional[SongData]:
@@ -102,14 +115,13 @@ class GeniusCollector:
         if self._checkpoint_path.exists():
             df = pd.read_csv(self._checkpoint_path)
             done = set(df["artist"].unique())
-            print(f"[checkpoint] {len(df)} треков, пропускаем: {done}")
+            print(f"[checkpoint] загружено {len(df)} треков ({len(done)} артистов)")
             return df, done
         return pd.DataFrame(), set()
 
     def _save_checkpoint(self, df: pd.DataFrame) -> None:
         self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(self._checkpoint_path, index=False)
-        print(f"  [checkpoint] {len(df)} треков сохранено")
 
     @staticmethod
     def _get_tags(artist_name: str, album_name: Optional[str]) -> list[str]:
