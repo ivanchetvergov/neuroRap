@@ -45,8 +45,8 @@ def train(model_cfg: ModelConfig, config: TrainConfig) -> None:
         result["labels"] = result["input_ids"].copy()
         return result
 
-    tokenized = dataset.map(tokenize, batched=True, num_proc=4, remove_columns=["text"])
-    lm_dataset = tokenized.map(group_texts, batched=True, batch_size=1000, num_proc=4)
+    tokenized = dataset.map(tokenize, batched=True, num_proc=2, remove_columns=["text"])
+    lm_dataset = tokenized.map(group_texts, batched=True, batch_size=1000, num_proc=2)
     split = lm_dataset.train_test_split(test_size=0.1, seed=42)
     log.info("Блоков train=%d eval=%d", len(split["train"]), len(split["test"]))
 

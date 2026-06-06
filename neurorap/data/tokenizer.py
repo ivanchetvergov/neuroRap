@@ -6,11 +6,11 @@ from transformers import AutoTokenizer
 
 class RapDataTokenizer:
     _SECTION_PATTERNS = {
-        "INTRO": r"\[Интро[^\]]*\]",
-        "VERSE": r"\[Куплет[^\]]*\]",
-        "CHORUS": r"\[Припев[^\]]*\]",
-        "BRIDGE": r"\[Bridge[^\]]*\]",
-        "OUTRO": r"\[Аутро[^\]]*\]",
+        "INTRO":  r"\[(?:Интро|Intro)[^\]]*\]",
+        "VERSE":  r"\[(?:Куплет|Verse|Rap)[^\]]*\]",
+        "CHORUS": r"\[(?:Припев|Chorus|Hook|Refrain)[^\]]*\]",
+        "BRIDGE": r"\[(?:Бридж|Bridge|Pre-Chorus|Pre-hook)[^\]]*\]",
+        "OUTRO":  r"\[(?:Аутро|Outro)[^\]]*\]",
     }
 
     def __init__(self, base_model: str = "sberbank-ai/rugpt3small_based_on_gpt2"):
