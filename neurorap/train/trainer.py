@@ -76,6 +76,7 @@ def train(model_cfg: ModelConfig, config: TrainConfig) -> None:
         greater_is_better=False,
         fp16=torch.cuda.is_available() and not model_cfg.use_qlora,
         bf16=model_cfg.use_qlora and torch.cuda.is_available(),
+        gradient_checkpointing=model_cfg.gradient_checkpointing,
         dataloader_num_workers=2,
         ddp_find_unused_parameters=False,
         report_to="none",

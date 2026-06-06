@@ -21,6 +21,7 @@ class ModelConfig:
     batch_size: int
     gradient_accumulation_steps: int
     learning_rate: float
+    gradient_checkpointing: bool = False
     use_qlora: bool = False
     lora_r: int = 16
     lora_alpha: int = 32
@@ -32,16 +33,18 @@ MODEL_REGISTRY: dict[str, ModelConfig] = {
     "rugpt3large": ModelConfig(
         name="rugpt3large",
         hf_id="sberbank-ai/rugpt3large_based_on_gpt2",
-        batch_size=8,
-        gradient_accumulation_steps=4,
+        batch_size=2,
+        gradient_accumulation_steps=16,
         learning_rate=2e-5,
+        gradient_checkpointing=True,
     ),
     "mgpt": ModelConfig(
         name="mgpt",
         hf_id="ai-forever/mGPT",
-        batch_size=4,
-        gradient_accumulation_steps=8,
+        batch_size=2,
+        gradient_accumulation_steps=16,
         learning_rate=1e-5,
+        gradient_checkpointing=True,
     ),
     "qwen_qlora": ModelConfig(
         name="qwen_qlora",
