@@ -1,5 +1,5 @@
-from config import TRAIN_CONFIG
-from src.train.trainer import train
+from neurorap.config import TRAIN_CONFIG
+from neurorap.train.trainer import train
 
 
 def main() -> None:

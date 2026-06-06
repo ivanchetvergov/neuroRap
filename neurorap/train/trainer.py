@@ -8,8 +8,8 @@ from transformers import (
     TrainingArguments,
 )
 
-from config import DATA_DIR, MODELS_DIR, TrainConfig
-from src.data.tokenizer import RapDataTokenizer
+from neurorap.config import DATA_DIR, MODELS_DIR, TrainConfig
+from neurorap.data.tokenizer import RapDataTokenizer
 
 
 def train(config: TrainConfig) -> None:

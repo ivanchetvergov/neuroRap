@@ -1,8 +1,8 @@
 import argparse
 
-from artists import ARTIST_DEFAULT_TAGS, ARTIST_LIST
-from config import MODELS_DIR, TRAIN_CONFIG
-from src.generate.generator import Generator
+from neurorap.artists import ARTIST_LIST
+from neurorap.config import MODELS_DIR, TRAIN_CONFIG
+from neurorap.generate.generator import Generator
 
 
 def parse_args() -> argparse.Namespace:

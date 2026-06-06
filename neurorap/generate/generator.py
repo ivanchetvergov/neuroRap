@@ -3,9 +3,9 @@ from pathlib import Path
 import torch
 from transformers import AutoModelForCausalLM
 
-from artists import ARTIST_DEFAULT_TAGS
-from src.data.tokenizer import RapDataTokenizer
-from src.generate.cleaner import clean_generated_lyrics
+from neurorap.artists import ARTIST_DEFAULT_TAGS
+from neurorap.data.tokenizer import RapDataTokenizer
+from neurorap.generate.cleaner import clean_generated_lyrics
 
 
 class Generator:

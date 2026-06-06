@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
-from artists import ARTIST_DEFAULT_TAGS, ARTIST_LIST
-from config import MODELS_DIR, TRAIN_CONFIG
-from src.generate.generator import Generator
+from neurorap.artists import ARTIST_DEFAULT_TAGS, ARTIST_LIST
+from neurorap.config import MODELS_DIR, TRAIN_CONFIG
+from neurorap.generate.generator import Generator
 
 load_dotenv()
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s %(message)s", level=logging.INFO)

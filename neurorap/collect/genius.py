@@ -7,9 +7,9 @@ from typing import Optional
 import lyricsgenius as lg
 import pandas as pd
 
-from artists import ALBUM_TAGS, ARTIST_DEFAULT_TAGS
-from src.collect.cleaner import clean_lyrics
-from src.schema import SongData
+from neurorap.artists import ALBUM_TAGS, ARTIST_DEFAULT_TAGS
+from neurorap.collect.cleaner import clean_lyrics
+from neurorap.schema import SongData
 
 log = logging.getLogger(__name__)
 
