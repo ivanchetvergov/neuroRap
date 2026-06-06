@@ -7,7 +7,7 @@ MODELS_DIR = Path("models")
 
 @dataclass(frozen=True)
 class TrainConfig:
-    block_size: int = 1024
+    block_size: int = 512
     epochs: int = 10
     warmup_steps: int = 200
     weight_decay: float = 0.01
