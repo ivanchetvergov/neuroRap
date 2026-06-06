@@ -65,7 +65,8 @@ class RapDataTokenizer:
                     parts.append(f"<SEC><{sec_type}>\n{clean}\n</SEC>")
             lyrics_block = "<LYRICS>\n" + "\n".join(parts) + "\n</LYRICS>"
 
-        return f"{meta}\n{lyrics_block}"
+        eos = self.tokenizer.eos_token or ""
+        return f"{meta}\n{lyrics_block}{eos}"
 
     def process_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         result = df.copy()

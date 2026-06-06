@@ -8,6 +8,6 @@ __pycache__/
 .idea/
 .vscode/
 .claude/
-data/
-models/
-final_model/
+/data/
+/models/
+/final_model/

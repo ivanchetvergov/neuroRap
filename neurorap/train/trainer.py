@@ -4,6 +4,7 @@ from datasets import Dataset
 from transformers import (
     AutoModelForCausalLM,
     DataCollatorForLanguageModeling,
+    EarlyStoppingCallback,
     Trainer,
     TrainingArguments,
 )
@@ -24,12 +25,7 @@ def train(config: TrainConfig) -> None:
     dataset = Dataset.from_dict({"text": df_processed["tokenized_text"].tolist()})
 
     def tokenize(examples: dict) -> dict:
-        return rap_tokenizer.tokenizer(
-            examples["text"],
-            truncation=True,
-            max_length=config.block_size,
-            padding=False,
-        )
+        return rap_tokenizer.tokenizer(examples["text"], padding=False)
 
     def group_texts(examples: dict) -> dict:
         concatenated = {k: sum(examples[k], []) for k in examples}
@@ -44,6 +40,8 @@ def train(config: TrainConfig) -> None:
     tokenized = dataset.map(tokenize, batched=True, num_proc=4, remove_columns=["text"])
     lm_dataset = tokenized.map(group_texts, batched=True, batch_size=1000, num_proc=4)
     split = lm_dataset.train_test_split(test_size=0.1, seed=42)
+
+    print(f"Train blocks: {len(split['train'])}, eval blocks: {len(split['test'])}")
 
     model = AutoModelForCausalLM.from_pretrained(config.base_model).to(device)
     model.resize_token_embeddings(len(rap_tokenizer.tokenizer))
@@ -69,7 +67,10 @@ def train(config: TrainConfig) -> None:
         eval_strategy="epoch",
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
+        greater_is_better=False,
         fp16=torch.cuda.is_available(),
+        dataloader_num_workers=2,
+        ddp_find_unused_parameters=False,
         report_to="none",
         seed=42,
     )
@@ -82,6 +83,7 @@ def train(config: TrainConfig) -> None:
         data_collator=DataCollatorForLanguageModeling(
             tokenizer=rap_tokenizer.tokenizer, mlm=False
         ),
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=config.early_stopping_patience)],
     )
 
     trainer.train()
