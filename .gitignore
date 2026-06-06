@@ -1,2 +1,13 @@
 .env
-.venv
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.cache/
+.idea/
+.vscode/
+.claude/
+data/
+models/
+final_model/

@@ -1,8 +1,7 @@
 PYTHON := python3
 export PYTHONPATH := .
 
-.PHONY: collect collect-genius collect-spotify merge train generate bot \
-        clean-data clean-model clean
+.PHONY: collect train generate bot clean-data clean-model clean
 
 # ── setup ────────────────────────────────────────────────────────────────────
 
@@ -11,20 +10,8 @@ install:
 
 # ── data collection ──────────────────────────────────────────────────────────
 
-collect-genius:
-	$(PYTHON) scripts/collect_genius.py
-
-collect-spotify:
-	$(PYTHON) scripts/collect_spotify.py
-
-merge:
-	$(PYTHON) scripts/merge_data.py
-
-# Genius собирает лирику → Spotify обогащает аудио-фичами → merge
 collect:
-	$(MAKE) collect-genius
-	$(MAKE) collect-spotify
-	$(MAKE) merge
+	$(PYTHON) scripts/collect_genius.py
 
 # ── model ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +29,7 @@ bot:
 # ── cleanup ──────────────────────────────────────────────────────────────────
 
 clean-data:
-	rm -f data/checkpoint_genius.csv data/checkpoint_spotify.csv data/lyrics_df.csv
+	rm -f data/lyrics_df.csv
 
 clean-model:
 	rm -rf models/

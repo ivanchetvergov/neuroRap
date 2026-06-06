@@ -15,16 +15,10 @@ ARTIST_LIST = [
     "Темный Принц",
     # --- лирика / старая школа ---
     "Oxxxymiron",
-    "Guf",
-    "25/17",
     "Noize MC",
-    "K.A.N.T.O.",
     "Смоки Мо",
     "Птаха",
     "Баста",
-    "Centr",
-    "Карандаш",
-    "Rigos",
     # --- новая школа / trap ---
     "FACE",
     "Big Baby Tape",
@@ -34,9 +28,7 @@ ARTIST_LIST = [
     "OG Buda",
     "Scally Milano",
     "Slava Marlow",
-    "HoodWink",
     "SEEMEE",
-    "Drago",
     # --- мелодичный / rnb ---
     "Скриптонит",
     "Gone.Fludd",
@@ -45,12 +37,11 @@ ARTIST_LIST = [
     "Flesh",
     "Lil Morty",
     "ЛСП",
-    "Федук",
+    "Feduk",
     # --- экспериментальный / cloud ---
     "OBLADAET",
     "IC3PEAK",
     "Instasamka",
-
     # --- свежие 2024-2026 ---
     "Молодой Принц",
     "MADKID",
@@ -58,10 +49,9 @@ ARTIST_LIST = [
     "LOVV66",
     "GSPD",
     "LIZER",
-    "Некоглай",
-    "ХЛЕБ",
     "Три дня дождя",
-    "Тилэкс",
+    "Soda Luv",
+    "Baby Cute",
 ]
 
 ARTIST_DEFAULT_TAGS: dict[str, list[str]] = {
@@ -79,16 +69,10 @@ ARTIST_DEFAULT_TAGS: dict[str, list[str]] = {
     "ICEGERGERT": ["New School", "Melodic Rap", "Pop Trap", "Mainstream"],
     "Темный Принц": ["Trap", "New School", "Dark", "Minimalism"],
     "Oxxxymiron": ["Lyrical", "Abstract", "Old School", "Conceptual", "Complex"],
-    "Guf": ["Lyrical", "Old School", "Alternative Hip-Hop", "Street Rap"],
-    "25/17": ["Hardcore Hip-Hop", "Social Rap", "Lyrical", "Street Rap", "Aggressive"],
     "Noize MC": ["Alternative Hip-Hop", "Political", "Lyrical", "Experimental"],
-    "K.A.N.T.O.": ["Lyrical", "Abstract", "Alternative Hip-Hop", "Storytelling"],
     "Смоки Мо": ["Old School", "Lyrical", "Street Rap", "Storytelling"],
     "Птаха": ["Old School", "Lyrical", "Street Rap", "Gangsta Rap"],
     "Баста": ["Alternative Hip-Hop", "Melodic", "Lyrical", "Mainstream"],
-    "Centr": ["Old School", "Street Rap", "Lyrical", "Storytelling"],
-    "Карандаш": ["Old School", "Underground", "Lyrical", "Abstract"],
-    "Rigos": ["Lyrical", "Old School", "Alternative Hip-Hop"],
     "FACE": ["Mumble Rap", "Trap", "Shock Rap", "New School", "Aggressive"],
     "Big Baby Tape": ["Trap", "Plug", "New School", "Energetic"],
     "Yanix": ["Cloud Rap", "Trap", "Melodic", "New School"],
@@ -107,7 +91,7 @@ ARTIST_DEFAULT_TAGS: dict[str, list[str]] = {
     "Flesh": ["Cloud Rap", "Emo Rap", "Dark", "Melodic"],
     "Lil Morty": ["Emo Rap", "Melodic", "Dark", "New School"],
     "ЛСП": ["Pop Rap", "Melodic", "New School", "Mainstream"],
-    "Федук": ["Pop Rap", "RnB", "Melodic", "Mainstream"],
+    "Feduk": ["Pop Rap", "RnB", "Melodic", "Mainstream"],
     "OBLADAET": ["Cloud Rap", "Experimental", "Abstract", "New School"],
     "IC3PEAK": ["Experimental", "Electronic", "Dark", "Alternative"],
     "Instasamka": ["Trap", "Hyperpop", "Aggressive", "New School"],
@@ -119,10 +103,9 @@ ARTIST_DEFAULT_TAGS: dict[str, list[str]] = {
     "LOVV66": ["Emo Rap", "Melodic", "Dark", "New School"],
     "GSPD": ["Experimental", "Industrial", "Dark", "Alternative", "Post-Punk Rap"],
     "LIZER": ["Emo Rap", "Dark Trap", "Melodic", "New School"],
-    "Некоглай": ["Meme Rap", "Hyperpop", "Comedy", "New School"],
-    "ХЛЕБ": ["Alternative Hip-Hop", "Experimental", "Abstract", "Ironic"],
     "Три дня дождя": ["Emo Rap", "Melodic", "Dark", "Alternative", "New School"],
-    "Тилэкс": ["Trap", "New School", "Street Rap", "Aggressive"],
+    "Soda Luv": ["Cloud Rap", "Experimental", "Abstract", "Atmospheric"],
+    "Baby Cute": ["Trap", "New School", "Melodic", "Pop Trap"],
 }
 
 ALBUM_TAGS: dict[str, dict[str, list[str]]] = {
@@ -193,10 +176,6 @@ ALBUM_TAGS: dict[str, dict[str, list[str]]] = {
         "Там, где нас нет": ["Emo Rap", "Dark Trap", "Melodic", "Atmospheric"],
         "Серый": ["Emo Rap", "Dark", "Melodic", "New School"],
     },
-    "25/17": {
-        "Русский подорожник": ["Hardcore Hip-Hop", "Social Rap", "Lyrical", "Dark"],
-        "Евангелие от пацана": ["Street Rap", "Lyrical", "Storytelling", "Aggressive"],
-    },
     "Баста": {
         "Баста 3": ["Alternative Hip-Hop", "Lyrical", "Melodic", "Mainstream"],
         "Аcousтика": ["Alternative Hip-Hop", "Lyrical", "Melodic", "Emotional"],
@@ -214,3 +193,6 @@ ALBUM_TAGS: dict[str, dict[str, list[str]]] = {
         "Трэш панда": ["Experimental", "Dark", "Electronic", "Aggressive"],
     },
 }
+
+assert set(ARTIST_LIST) <= ARTIST_DEFAULT_TAGS.keys(), \
+    f"Нет тегов для артистов: {set(ARTIST_LIST) - ARTIST_DEFAULT_TAGS.keys()}"

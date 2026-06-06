@@ -7,7 +7,5 @@ class SongData:
     artist: str
     title: str
     lyrics: str
-    structured_text: str
     tags: str
-    primary_artist: str
     album: Optional[str]

@@ -1,3 +1,4 @@
+import logging
 import time
 from dataclasses import asdict
 from pathlib import Path
@@ -9,6 +10,8 @@ import pandas as pd
 from artists import ALBUM_TAGS, ARTIST_DEFAULT_TAGS
 from src.collect.cleaner import clean_lyrics
 from src.schema import SongData
+
+log = logging.getLogger(__name__)
 
 
 class GeniusCollector:
@@ -24,54 +27,51 @@ class GeniusCollector:
         self._checkpoint_path = checkpoint_path
 
     def collect(self, artist_list: list[str], max_songs: Optional[int] = None) -> pd.DataFrame:
+        self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         existing_df, done_artists = self._load_checkpoint()
 
-        pending = [a for a in artist_list if a not in done_artists]
         n_total = len(artist_list)
-        print(f"\nАртистов всего: {n_total} | уже собрано: {len(done_artists)} | осталось: {len(pending)}\n")
+        log.info("Артистов: %d | пропускаем: %d | собираем: %d",
+                 n_total, len(done_artists), n_total - len(done_artists))
 
         for i, artist_name in enumerate(artist_list, 1):
             if artist_name in done_artists:
-                print(f"  [{i:>2}/{n_total}] {artist_name} — пропущен")
+                log.info("[%2d/%d] %s — пропущен", i, n_total, artist_name)
                 continue
 
-            print(f"\n[{i:>2}/{n_total}] {artist_name}")
+            log.info("[%2d/%d] %s", i, n_total, artist_name)
             try:
+                log.info("  ищу артиста на Genius...")
                 artist_obj = self._genius.search_artist(
                     artist_name, max_songs=max_songs, sort="popularity"
                 )
                 if not artist_obj:
-                    print("  не найден на Genius")
+                    log.warning("  не найден на Genius")
                     continue
 
                 n_songs = len(artist_obj.songs)
+                log.info("  найдено %d треков, начинаю сбор", n_songs)
                 songs: list[SongData] = []
-                print(f"  найдено {n_songs} треков, собираю...", flush=True)
 
                 for j, song in enumerate(artist_obj.songs, 1):
+                    title = song.title[:60]
                     result = self._process_song(song, artist_name)
                     if result:
                         songs.append(result)
-
-                    if j % 10 == 0 or j == n_songs:
-                        pct = j / n_songs * 100
-                        print(f"  [{j:>3}/{n_songs}] {pct:.0f}%  собрано: {len(songs)}  → {song.title[:45]}", flush=True)
-
+                    log.info("  [%3d/%d] %s %s", j, n_songs, title, "✓" if result else "✗")
                     time.sleep(0.15)
 
-                n_base = len(existing_df) + len(songs)
-                print(f"  ✓ готово: {len(songs)}/{n_songs} треков | в базе: {n_base}")
+                log.info("  готово: %d/%d треков | в базе: %d",
+                         len(songs), n_songs, len(existing_df) + len(songs))
 
                 artist_df = pd.DataFrame([asdict(s) for s in songs])
                 existing_df = pd.concat([existing_df, artist_df], ignore_index=True)
                 self._save_checkpoint(existing_df)
 
             except Exception as e:
-                print(f"  [!] ошибка: {e}")
+                log.error("  ошибка при сборе %s: %s", artist_name, e)
                 time.sleep(10)
 
-        print(f"\n{'─'*50}")
-        print(f"Сбор завершён: {len(existing_df)} треков, {existing_df['artist'].nunique()} артистов")
         return existing_df
 
     def _process_song(self, song_light, artist_name: str) -> Optional[SongData]:
@@ -88,42 +88,55 @@ class GeniusCollector:
             if hasattr(song_full, "album") and isinstance(song_full.album, dict):
                 album_name = song_full.album.get("name")
 
-            primary_artist = artist_name
-            if isinstance(song_full.primary_artist, dict):
-                primary_artist = song_full.primary_artist.get("name", artist_name)
-
             tags = self._get_tags(artist_name, album_name)
-            tags_str = ",".join(tags)
-            tags_context = f"[TAGS: {tags_str}]" if tags else ""
-
-            structured_text = (
-                f"[ARTIST: {artist_name}] [TITLE: {song_full.title}] {tags_context} {lyrics}"
-            ).strip()
 
             return SongData(
                 artist=artist_name,
                 title=song_full.title,
                 lyrics=lyrics,
-                structured_text=structured_text,
-                tags=tags_str,
-                primary_artist=primary_artist,
+                tags=",".join(tags),
                 album=album_name,
             )
         except Exception as e:
-            print(f"  [!] '{song_light.title}': {e}")
+            log.error("  ошибка трека '%s': %s", song_light.title, e)
             return None
 
     def _load_checkpoint(self) -> tuple[pd.DataFrame, set[str]]:
+        self._merge_legacy_checkpoint()
+
         if self._checkpoint_path.exists():
             df = pd.read_csv(self._checkpoint_path)
             done = set(df["artist"].unique())
-            print(f"[checkpoint] загружено {len(df)} треков ({len(done)} артистов)")
+            log.info("[checkpoint] загружено %d треков (%d артистов)", len(df), len(done))
             return df, done
         return pd.DataFrame(), set()
 
+    def _merge_legacy_checkpoint(self) -> None:
+        """Однократная миграция из checkpoint_genius.csv → lyrics_df.csv."""
+        legacy = self._checkpoint_path.parent / "checkpoint_genius.csv"
+        if not legacy.exists():
+            return
+
+        old_df = pd.read_csv(legacy)
+        if self._checkpoint_path.exists():
+            current_df = pd.read_csv(self._checkpoint_path)
+            done = set(current_df["artist"].unique())
+            extra = old_df[~old_df["artist"].isin(done)]
+            if not extra.empty:
+                merged = pd.concat([current_df, extra], ignore_index=True)
+                merged.to_csv(self._checkpoint_path, index=False)
+                log.info("[migrate] добавлено %d треков от %d артистов из checkpoint_genius.csv",
+                         len(extra), extra["artist"].nunique())
+        else:
+            old_df.to_csv(self._checkpoint_path, index=False)
+            log.info("[migrate] создан checkpoint из checkpoint_genius.csv (%d треков)", len(old_df))
+
+        legacy.unlink()
+        log.info("[migrate] checkpoint_genius.csv удалён")
+
     def _save_checkpoint(self, df: pd.DataFrame) -> None:
-        self._checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(self._checkpoint_path, index=False)
+        log.info("  [checkpoint] сохранено %d треков", len(df))
 
     @staticmethod
     def _get_tags(artist_name: str, album_name: Optional[str]) -> list[str]:
