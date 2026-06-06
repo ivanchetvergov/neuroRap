@@ -66,6 +66,7 @@ def train(model_cfg: ModelConfig, config: TrainConfig) -> None:
         warmup_steps=config.warmup_steps,
         weight_decay=config.weight_decay,
         gradient_accumulation_steps=model_cfg.gradient_accumulation_steps,
+        optim="adamw_8bit",
         logging_dir=str(output_dir / "logs"),
         logging_steps=50,
         save_strategy="epoch",
