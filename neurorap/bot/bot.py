@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
-from neurorap.artists import ARTIST_DEFAULT_TAGS, ARTIST_LIST
-from neurorap.config import MODELS_DIR, TRAIN_CONFIG
+from neurorap.artists import ARTIST_LIST
+from neurorap.config import MODELS_DIR
 from neurorap.generate.generator import Generator
 
 load_dotenv()
@@ -20,8 +20,8 @@ _ARTIST_SET = set(ARTIST_LIST)
 
 
 def _make_generator() -> Generator:
-    model_path = MODELS_DIR / "final"
-    return Generator(model_path, TRAIN_CONFIG.base_model)
+    model_name = os.environ.get("MODEL_NAME", "rugpt3large")
+    return Generator(MODELS_DIR / model_name / "final")
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

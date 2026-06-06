@@ -29,7 +29,6 @@ def train(model_cfg: ModelConfig, config: TrainConfig) -> None:
         log.info("Модель: %s (%s)", model_cfg.name, model_cfg.hf_id)
 
     model, rap_tokenizer = load_model(model_cfg)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # data prep runs once on main process; other ranks load from cache
     if is_main:
@@ -120,14 +119,20 @@ def train(model_cfg: ModelConfig, config: TrainConfig) -> None:
     if is_main:
         final_dir = output_dir / "final"
         final_dir.mkdir(parents=True, exist_ok=True)
-        trainer.save_model(str(final_dir))
-        rap_tokenizer.tokenizer.save_pretrained(str(final_dir))
-        log.info("Модель сохранена: %s", final_dir)
 
         log.info("Считаю generation metrics...")
         unwrapped = trainer.model
-        gen_metrics = compute_generation_metrics(unwrapped, rap_tokenizer, _EVAL_ARTISTS, device)
+        gen_device = next(unwrapped.parameters()).device
+        gen_metrics = compute_generation_metrics(unwrapped, rap_tokenizer, _EVAL_ARTISTS, gen_device)
         log.info("distinct-1=%.3f distinct-2=%.3f", gen_metrics["distinct_1"], gen_metrics["distinct_2"])
+
+        if model_cfg.use_qlora:
+            merged = unwrapped.merge_and_unload()
+            merged.save_pretrained(str(final_dir))
+        else:
+            trainer.save_model(str(final_dir))
+        rap_tokenizer.tokenizer.save_pretrained(str(final_dir))
+        log.info("Модель сохранена: %s", final_dir)
 
         metrics_cb.finalize(gen_metrics)
         log.info("Результаты сохранены: %s", results_path)

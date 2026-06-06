@@ -9,8 +9,9 @@ from neurorap.generate.cleaner import clean_generated_lyrics
 
 
 class Generator:
-    def __init__(self, model_path: Path | str, base_model: str = "sberbank-ai/rugpt3small_based_on_gpt2"):
-        self._rap_tokenizer = RapDataTokenizer(base_model)
+    def __init__(self, model_path: Path | str):
+        model_path = Path(model_path)
+        self._rap_tokenizer = RapDataTokenizer(str(model_path))
         self._model = AutoModelForCausalLM.from_pretrained(str(model_path))
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._model = self._model.to(self._device).eval()
@@ -43,7 +44,7 @@ class Generator:
             output_ids = self._model.generate(
                 input_ids,
                 attention_mask=attention_mask,
-                max_length=input_ids.shape[1] + max_tokens,
+                max_new_tokens=max_tokens,
                 do_sample=True,
                 temperature=temperature,
                 top_k=top_k,

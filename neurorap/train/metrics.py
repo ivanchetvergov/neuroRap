@@ -73,29 +73,33 @@ def compute_generation_metrics(
     all_tokens: list[str] = []
     lengths: list[int] = []
 
+    from neurorap.artists import ARTIST_DEFAULT_TAGS
+
     for artist in sample_artists:
-        from neurorap.artists import ARTIST_DEFAULT_TAGS
         tags = ARTIST_DEFAULT_TAGS.get(artist, ["Hip-Hop"])
         prompt = rap_tokenizer.create_generation_prompt(artist, tags)
-
         inputs = rap_tokenizer.tokenizer(prompt, return_tensors="pt").to(device)
 
         for _ in range(n_per_artist):
-            with torch.no_grad():
-                out = model.generate(
-                    **inputs,
-                    max_new_tokens=max_tokens,
-                    do_sample=True,
-                    temperature=0.9,
-                    top_k=50,
-                    top_p=0.9,
-                    repetition_penalty=1.5,
-                    pad_token_id=rap_tokenizer.tokenizer.eos_token_id,
-                )
-            text = rap_tokenizer.tokenizer.decode(out[0], skip_special_tokens=True)
-            tokens = text.split()
-            all_tokens.extend(tokens)
-            lengths.append(len(tokens))
+            try:
+                with torch.no_grad():
+                    out = model.generate(
+                        **inputs,
+                        max_new_tokens=max_tokens,
+                        do_sample=True,
+                        temperature=0.9,
+                        top_k=50,
+                        top_p=0.9,
+                        repetition_penalty=1.5,
+                        pad_token_id=rap_tokenizer.tokenizer.eos_token_id,
+                    )
+                text = rap_tokenizer.tokenizer.decode(out[0], skip_special_tokens=True)
+                tokens = text.split()
+                all_tokens.extend(tokens)
+                lengths.append(len(tokens))
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning("generation sample failed for %s: %s", artist, e)
 
     return {
         "distinct_1": _distinct_n(all_tokens, 1),

@@ -1,13 +1,14 @@
 import argparse
 
 from neurorap.artists import ARTIST_LIST
-from neurorap.config import MODELS_DIR, TRAIN_CONFIG
+from neurorap.config import MODEL_REGISTRY, MODELS_DIR
 from neurorap.generate.generator import Generator
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Генерация рэп-лирики")
     parser.add_argument("--artist", "-a", default="PHARAOH", help="Имя артиста")
+    parser.add_argument("--model", "-m", choices=list(MODEL_REGISTRY), default="rugpt3large", help="Имя модели")
     parser.add_argument("--seed", "-s", default="", help="Затравочный текст")
     parser.add_argument("--section", default="VERSE", choices=["VERSE", "CHORUS", "BRIDGE", "INTRO", "OUTRO"])
     parser.add_argument("--max-tokens", type=int, default=200)
@@ -23,10 +24,7 @@ def main() -> None:
         print(f"Неизвестный артист. Доступные:\n{chr(10).join(ARTIST_LIST)}")
         return
 
-    generator = Generator(
-        model_path=MODELS_DIR / "final",
-        base_model=TRAIN_CONFIG.base_model,
-    )
+    generator = Generator(model_path=MODELS_DIR / args.model / "final")
 
     lines = generator.generate(
         artist=args.artist,

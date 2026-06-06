@@ -26,7 +26,8 @@ class RapDataTokenizer:
                 "<VERSE>", "<CHORUS>", "<BRIDGE>", "<INTRO>", "<OUTRO>",
             ]
         })
-        self.tokenizer.pad_token = self.tokenizer.eos_token
+        if self.tokenizer.eos_token:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
 
     def extract_sections(self, lyrics: str) -> list[tuple[str, str]]:
         positions: list[tuple[int, str, str]] = []
